@@ -5,7 +5,7 @@ import io
 # ==================================================
 # ✨ LUMINA IA — VERSÃO BRASIL INTEIRO
 # Proprietário: Gilmar Gnann Guimarães
-# 📧 FOTOS: nenegnann@gmail.com
+# 📧 contato: nenegnann@gmail.com
 # 💳 PIX: nenegnann@gmail.com
 # 🇧🇷 DIVERSIDADE • INCLUSÃO • TODOS
 # 🔒 Marca em registro INPI | Todos os direitos reservados
