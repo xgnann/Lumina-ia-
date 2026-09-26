@@ -61,15 +61,19 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        dados_imagem = buffer.getvalue()
+        buffer1 = io.BytesIO()
+        img.save(buffer1, format='PNG')
+        buffer1.seek(0)
 
-        st.image(dados_imagem, caption=f"Prévia — {tipo}", use_column_width=True)
+        buffer2 = io.BytesIO()
+        img.save(buffer2, format='PNG')
+        buffer2.seek(0)
+
+        st.image(buffer1, caption=f"Prévia — {tipo}", use_column_width=True)
 
         st.download_button(
             "📥 Baixar Imagem",
-            data=dados_imagem,
+            data=buffer2,
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
@@ -103,5 +107,3 @@ with aba4:
 
 st.divider()
 st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
-
-
