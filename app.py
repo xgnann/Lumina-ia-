@@ -62,16 +62,16 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        # ✅ MÉTODO CORRETO PARA STREAMLIT CLOUD
+        # ✅ JEITO OFICIAL DO STREAMLIT CLOUD
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
-        dados_imagem = buffer.getvalue()
+        buffer.seek(0)
 
-        st.image(dados_imagem, caption=f"Prévia — {tipo}", use_column_width=True)
+        st.image(buffer, caption=f"Prévia — {tipo}", use_column_width=True)
 
         st.download_button(
             "📥 Baixar Imagem",
-            data=dados_imagem,
+            data=buffer,
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
@@ -105,3 +105,4 @@ with aba4:
 
 st.divider()
 st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
+
