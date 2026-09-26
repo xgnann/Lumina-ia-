@@ -17,12 +17,12 @@ config = {
      "versao": "1.1"
  }
  # 🔑 SISTEMA DE ACESSO
- if "logado" not in st.session_state:
-     st.session_state.logado = False
- st.title("✨ Lumina IA — Sistema de Produção Visual")
- st.caption(f"Versão {config['versao']} | Propriedade: {DONO_NOME}")
- st.divider()
- aba1, aba2, aba3, aba4 = st.tabs([
+if "logado" not in st.session_state:
+st.session_state.logado = False
+st.title("✨ Lumina IA — Sistema de Produção Visual")
+st.caption(f"Versão {config['versao']} | Propriedade: {DONO_NOME}")
+st.divider()
+aba1, aba2, aba3, aba4 = st.tabs([
      "🎨 Produção", 
      "📤 Enviar Imagem", 
      "👁️ Prévia",
