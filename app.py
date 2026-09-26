@@ -29,12 +29,12 @@ with aba1:
          
          arq.seek(0)
          st.download_button("Baixar", arq, f"{tipo}.png")
- with aba2:
+with aba2:
      st.checkbox("Adesivo")
      st.checkbox("Lona")
      st.checkbox("ACM")
      st.checkbox("Letra Caixa")
- with aba3:
+with aba3:
      st.write(f"Nome: {NOME}")
      st.write(f"PIX: {PIX}")
      st.caption("© 2026")
