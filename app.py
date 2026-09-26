@@ -1,4 +1,4 @@
- import streamlit as st
+import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
 
@@ -45,7 +45,6 @@ with aba1:
         st.info(f"Estilo: {estilo} | Texto: {texto}")
         st.balloons()
 
-        # Cria imagem
         largura, altura = 800, 400
         img = Image.new('RGB', (largura, altura), color=cor_principal)
         desenho = ImageDraw.Draw(img)
@@ -62,13 +61,11 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        # ✅ JEITO QUE SEMPRE FUNCIONA — salva e mostra
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
         
         st.image(buffer.getvalue(), caption=f"Prévia — {tipo}", use_column_width=True)
 
-        # Download
         st.download_button(
             "📥 Baixar Imagem",
             data=buffer.getvalue(),
