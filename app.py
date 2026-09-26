@@ -1,3 +1,4 @@
+
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
@@ -5,10 +6,8 @@ import io
 # ==================================================
 # ✨ LUMINA IA — VERSÃO BRASIL INTEIRO
 # Proprietário: Gilmar Gnann Guimarães
-# 📧 contato: nenegnann@gmail.com
 # 💳 PIX: nenegnann@gmail.com
-# 🇧🇷 DIVERSIDADE • INCLUSÃO • TODOS
-# 🔒 Marca em registro INPI | Todos os direitos reservados
+# 🇧🇷 Diversidade • Inclusão • Todos os direitos reservados
 # ==================================================
 
 st.set_page_config(
@@ -18,9 +17,9 @@ st.set_page_config(
 )
 
 SEU_NOME = "Gilmar Gnann Guimarães"
-SEU_CPF = "03072871906"  # substitua pelo seu CPF
+SEU_CPF = "03072871906"
 CHAVE_PIX = "nenegnann@gmail.com"
-CONTA_BANCARIA = "Banco: Nu Pagamentos | Agência: 0001 | Conta: 56071828-9"
+CONTA_BANCARIA = "Banco: Nu Pagamentos | Agência: 0001 | Conta:56071828-9 "
 
 st.title("✨ Lumina IA — Projetos de Comunicação Visual")
 st.subheader("100% Gratuita para você! 💜")
@@ -89,17 +88,18 @@ with aba3:
     - 📺 YouTube, Instagram e TikTok — tutoriais e demonstrações
     - 👁️ Quanto mais acessada, mais visualizações = mais ganhos
     - 🤝 Parcerias com gráficas e fornecedores
-    - 💸 Doações voluntárias via PIX
+    - 💸 Doações via PIX
     """)
-    st.info(f"💳 PIX para doações: **{CHAVE_PIX}**")
+    st.info(f"💳 PIX: **{CHAVE_PIX}**")
 
 with aba4:
     st.header("👤 Dados do Criador")
     st.write(f"**Nome:** {SEU_NOME}")
     st.write(f"**CPF:** {SEU_CPF}")
     st.write(f"**Chave PIX:** {CHAVE_PIX}")
-    st.write(f"**Conta Bancária:** {CONTA_BANCARIA}")
+    st.write(f"**Conta:** {CONTA_BANCARIA}")
     st.caption("© 2026 Lumina IA — Todos os direitos reservados")
 
 st.divider()
-st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Brasil Inteiro ✨</center>", unsafe_allow_html=True)
+st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
+código completo versao final
