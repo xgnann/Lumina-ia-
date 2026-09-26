@@ -1,56 +1,40 @@
 import streamlit as st
-from PIL import Image, ImageDraw, ImageFont
-import io
-
-st.set_page_config(page_title="Lumina IA", page_icon="✨", layout="wide")
-
-NOME = "Gilmar Gnann Guimarães"
-PIX = "nenegnann@gmail.com"
-
-st.title("✨ Lumina IA — Comunicação Visual")
-st.subheader("100% Gratuita 💜")
-
-aba1, aba2, aba3 = st.tabs(["Criar", "Acabamentos", "Sobre"])
-
-with aba1:
-    tipo = st.selectbox("Tipo", ["Fachada", "Placa", "Banner", "Cartão"])
-    texto = st.text_input("Texto")
-    cor_fundo = st.color_picker("Cor de fundo", "#2E86AB")
-    cor_texto = st.color_picker("Cor do texto", "#FFFFFF")
-
-    if st.button("✨ Gerar"):
-        st.success("Pronto! ✅")
-        
-        img = Image.new("RGB", (800, 400), cor_fundo)
-        desenho = ImageDraw.Draw(img)
-        
-        try:
-            fonte = ImageFont.truetype("arial.ttf", 50)
-        except:
-            fonte = ImageFont.load_default()
-        
-        bbox = desenho.textbbox((0,0), texto, font=fonte)
-        lar = bbox[2] - bbox[0]
-        alt = bbox[3] - bbox[1]
-        x = (800 - lar) // 2
-        y = (400 - alt) // 2
-        desenho.text((x, y), texto, fill=cor_texto, font=fonte)
-        
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        buf.seek(0)
-        
-        # ✅ AQUI ESTÁ A MUDANÇA IMPORTANTE
-        st.image(buf.getvalue(), caption="Sua arte ✨", use_column_width=True)
-        
-        buf.seek(0)
-        st.download_button("📥 Baixar", buf, f"{tipo}.png", "image/png")
-
-with aba2:
-    for item in ["Adesivo", "Lona", "ACM", "Letra Caixa"]:
-        st.checkbox(item)
-
-with aba3:
-    st.write(f"**Nome:** {NOME}")
-    st.write(f"**PIX:** {PIX}")
-    st.caption("© 2026 — Todos os direitos reservados")
+ from PIL import Image, ImageDraw, ImageFont
+ import io
+ st.set_page_config(page_title="Lumina IA", page_icon="✨")
+ NOME = "Gilmar Gnann Guimarães"
+ PIX = "nenegnann@gmail.com"
+ st.title("✨ Lumina IA")
+ aba1, aba2, aba3 = st.tabs(["Criar", "Acabamentos", "Sobre"])
+ with aba1:
+     tipo = st.selectbox("Tipo", ["Fachada", "Placa", "Banner", "Cartão"])
+     texto = st.text_input("Texto")
+     cf = st.color_picker("Fundo", "#2E86AB")
+     ct = st.color_picker("Texto", "#FFFFFF")
+     if st.button("✨ Gerar"):
+         img = Image.new("RGB", (800, 400), cf)
+         d = ImageDraw.Draw(img)
+         f = ImageFont.load_default()
+         b = d.textbbox((0, 0), texto, font=f)
+         l = b[2] - b[0]
+         a = b[3] - b[1]
+         x = (800 - l) // 2
+         y = (400 - a) // 2
+         d.text((x, y), texto, fill=ct, font=f)
+         
+         arq = io.BytesIO()
+         img.save(arq, "PNG")
+         arq.seek(0)
+         st.image(arq)
+         
+         arq.seek(0)
+         st.download_button("Baixar", arq, f"{tipo}.png")
+ with aba2:
+     st.checkbox("Adesivo")
+     st.checkbox("Lona")
+     st.checkbox("ACM")
+     st.checkbox("Letra Caixa")
+ with aba3:
+     st.write(f"Nome: {NOME}")
+     st.write(f"PIX: {PIX}")
+     st.caption("© 2026")
