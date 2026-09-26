@@ -6,7 +6,7 @@ import io
 # ✨ LUMINA IA — VERSÃO BRASIL INTEIRO
 # Proprietário: Gilmar Gnann Guimarães
 # 💳 PIX: nenegnann@gmail.com
-# 🇧🇷 Diversidade • Inclusão • Todos os direitos reservados
+# 🇧🇷 Todos os direitos reservados
 # ==================================================
 
 st.set_page_config(
@@ -62,17 +62,18 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        # ✅ Forma CORRIGIDA de exibir a imagem
+        # ✅ Forma que SEMPRE funciona
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
-        img_bytes = buffer.getvalue()
-        
-        st.image(img_bytes, caption=f"Prévia — {tipo}", use_column_width=True)
+        buffer.seek(0)  # ← essa linha que faltava!
+
+        st.image(buffer, caption=f"Prévia — {tipo}", use_column_width=True)
 
         # Download
+        buffer.seek(0)
         st.download_button(
             "📥 Baixar Imagem",
-            data=img_bytes,
+            data=buffer,
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
@@ -89,9 +90,9 @@ with aba3:
     st.markdown("""
     A **Lumina IA** é **gratuita** para todos! 💙
     A renda vem de:
-    - 📺 YouTube, Instagram e TikTok — tutoriais e demonstrações
+    - 📺 YouTube, Instagram e TikTok — tutoriais
     - 👁️ Quanto mais acessada, mais visualizações = mais ganhos
-    - 🤝 Parcerias com gráficas e fornecedores
+    - 🤝 Parcerias com gráficas
     - 💸 Doações via PIX
     """)
     st.info(f"💳 PIX: **{CHAVE_PIX}**")
@@ -106,4 +107,4 @@ with aba4:
 
 st.divider()
 st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
-            
+
