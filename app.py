@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
 
@@ -62,17 +62,16 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        # ✅ Forma que SEMPRE funciona — converte para bytes
+        # ✅ JEITO QUE SEMPRE FUNCIONA — salva e mostra
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
-        img_bytes = buffer.getvalue()
-
-        st.image(img_bytes, caption=f"Prévia — {tipo}", use_column_width=True)
+        
+        st.image(buffer.getvalue(), caption=f"Prévia — {tipo}", use_column_width=True)
 
         # Download
         st.download_button(
             "📥 Baixar Imagem",
-            data=img_bytes,
+            data=buffer.getvalue(),
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
@@ -106,4 +105,3 @@ with aba4:
 
 st.divider()
 st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
-
