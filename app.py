@@ -62,16 +62,16 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        # ✅ JEITO OFICIAL DO STREAMLIT CLOUD
+        # ✅ MÉTODO GARANTIDO — salva OS DADOS e reutiliza
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
-        buffer.seek(0)
+        dados_imagem = buffer.getvalue()  # Salva uma vez e usa para TUDO
 
-        st.image(buffer, caption=f"Prévia — {tipo}", use_column_width=True)
+        st.image(dados_imagem, caption=f"Prévia — {tipo}", use_column_width=True)
 
         st.download_button(
             "📥 Baixar Imagem",
-            data=buffer,
+            data=dados_imagem,
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
