@@ -20,7 +20,7 @@ st.set_page_config(
 SEU_NOME = "Gilmar Gnann Guimarães"
 SEU_CPF = "03072871906"  # substitua pelo seu CPF
 CHAVE_PIX = "nenegnann@gmail.com"
-CONTA_BANCARIA = "Banco: Nu Pagamentos S.A. - Instituição de Pagamento | Agência: 0001 | Conta:"56071828-9"
+CONTA_BANCARIA = "Banco: Nu Pagamentos S.A. - Instituição de Pagamento" | Agência: 0001 | Conta:"56071828-9"
 
 st.title("✨ Lumina IA — Projetos de Comunicação Visual")
 st.subheader("100% Gratuita para você! 💜")
