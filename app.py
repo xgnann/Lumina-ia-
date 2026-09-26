@@ -45,6 +45,7 @@ with aba1:
         st.info(f"Estilo: {estilo} | Texto: {texto}")
         st.balloons()
 
+        # Cria imagem
         largura, altura = 800, 400
         img = Image.new('RGB', (largura, altura), color=cor_principal)
         desenho = ImageDraw.Draw(img)
@@ -61,14 +62,17 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
+        # ✅ Forma que SEMPRE funciona
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
-        
-        st.image(buffer.getvalue(), caption=f"Prévia — {tipo}", use_column_width=True)
+        buffer.seek(0)
+        img_bytes = buffer.read()
+
+        st.image(img_bytes, caption=f"Prévia — {tipo}", use_column_width=True)
 
         st.download_button(
             "📥 Baixar Imagem",
-            data=buffer.getvalue(),
+            data=img_bytes,
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
