@@ -1,7 +1,7 @@
 import streamlit as st
- from PIL import Image, ImageDraw, ImageFont
- import io
- import json
+from PIL import Image, ImageDraw, ImageFont
+import io
+import json
  st.set_page_config(page_title="Lumina IA — Controle Total", page_icon="👑", layout="wide")
  # ⚙️ DADOS DO DONO
  DONO_NOME = "Gilmar Gnann Guimarães"
