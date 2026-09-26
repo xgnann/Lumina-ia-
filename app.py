@@ -1,12 +1,12 @@
 import streamlit as st
- from PIL import Image, ImageDraw, ImageFont
- import io
- st.set_page_config(page_title="Lumina IA", page_icon="✨")
- NOME = "Gilmar Gnann Guimarães"
- PIX = "nenegnann@gmail.com"
- st.title("✨ Lumina IA")
- aba1, aba2, aba3 = st.tabs(["Criar", "Acabamentos", "Sobre"])
- with aba1:
+from PIL import Image, ImageDraw, ImageFont
+import io
+st.set_page_config(page_title="Lumina IA", page_icon="✨")
+NOME = "Gilmar Gnann Guimarães"
+PIX = "nenegnann@gmail.com"
+st.title("✨ Lumina IA")
+aba1, aba2, aba3 = st.tabs(["Criar", "Acabamentos", "Sobre"])
+with aba1:
      tipo = st.selectbox("Tipo", ["Fachada", "Placa", "Banner", "Cartão"])
      texto = st.text_input("Texto")
      cf = st.color_picker("Fundo", "#2E86AB")
