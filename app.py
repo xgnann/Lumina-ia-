@@ -1,4 +1,3 @@
-
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
@@ -17,9 +16,9 @@ st.set_page_config(
 )
 
 SEU_NOME = "Gilmar Gnann Guimarães"
-SEU_CPF = "03072871906"
+SEU_CPF = "000.000.000-00"
 CHAVE_PIX = "nenegnann@gmail.com"
-CONTA_BANCARIA = "Banco: Nu Pagamentos | Agência: 0001 | Conta:56071828-9 "
+CONTA_BANCARIA = "Banco: Nu Pagamentos | Agência: 0000 | Conta: 00000000"
 
 st.title("✨ Lumina IA — Projetos de Comunicação Visual")
 st.subheader("100% Gratuita para você! 💜")
@@ -46,6 +45,7 @@ with aba1:
         st.info(f"Estilo: {estilo} | Texto: {texto}")
         st.balloons()
 
+        # Cria imagem
         largura, altura = 800, 400
         img = Image.new('RGB', (largura, altura), color=cor_principal)
         desenho = ImageDraw.Draw(img)
@@ -62,13 +62,17 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        st.image(img, caption=f"Prévia — {tipo}", use_column_width=True)
-
+        # ✅ Forma CORRIGIDA de exibir a imagem
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
+        img_bytes = buffer.getvalue()
+        
+        st.image(img_bytes, caption=f"Prévia — {tipo}", use_column_width=True)
+
+        # Download
         st.download_button(
             "📥 Baixar Imagem",
-            data=buffer.getvalue(),
+            data=img_bytes,
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
@@ -102,3 +106,4 @@ with aba4:
 
 st.divider()
 st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
+            
