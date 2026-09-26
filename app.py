@@ -45,7 +45,6 @@ with aba1:
         st.info(f"Estilo: {estilo} | Texto: {texto}")
         st.balloons()
 
-        # Cria imagem
         largura, altura = 800, 400
         img = Image.new('RGB', (largura, altura), color=cor_principal)
         desenho = ImageDraw.Draw(img)
@@ -62,10 +61,9 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        # ✅ MÉTODO GARANTIDO — salva OS DADOS e reutiliza
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
-        dados_imagem = buffer.getvalue()  # Salva uma vez e usa para TUDO
+        dados_imagem = buffer.getvalue()
 
         st.image(dados_imagem, caption=f"Prévia — {tipo}", use_column_width=True)
 
@@ -105,4 +103,5 @@ with aba4:
 
 st.divider()
 st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
+
 
