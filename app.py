@@ -107,3 +107,5 @@ with aba4:
 
 st.divider()
 st.markdown("<center>✨ Lumina IA — Diversidade • Inclusão • Todos ✨</center>", unsafe_allow_html=True)
+
+
