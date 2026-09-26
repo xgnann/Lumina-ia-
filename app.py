@@ -62,18 +62,17 @@ with aba1:
         pos_y = (altura - alt_texto) // 2
         desenho.text((pos_x, pos_y), texto, font=fonte, fill=cor_texto)
 
-        # ✅ Forma que SEMPRE funciona
+        # ✅ Forma que SEMPRE funciona — converte para bytes
         buffer = io.BytesIO()
         img.save(buffer, format='PNG')
-        buffer.seek(0)  # ← essa linha que faltava!
+        img_bytes = buffer.getvalue()
 
-        st.image(buffer, caption=f"Prévia — {tipo}", use_column_width=True)
+        st.image(img_bytes, caption=f"Prévia — {tipo}", use_column_width=True)
 
         # Download
-        buffer.seek(0)
         st.download_button(
             "📥 Baixar Imagem",
-            data=buffer,
+            data=img_bytes,
             file_name=f"Lumina_{tipo}.png",
             mime="image/png"
         )
