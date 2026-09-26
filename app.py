@@ -1,7 +1,6 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
-import json
 
 st.set_page_config(page_title="Lumina IA", page_icon="✨", layout="wide")
 
@@ -80,7 +79,7 @@ with aba3:
         y_texto = (alt - a_texto) // 2
         desenho.text((x_texto, y_texto), texto, fill=cor_texto, font=fonte)
         
-        st.image(img, caption=f"Prévia — {tipo}", use_column_width=True)
+        st.image(img, caption=f"Prévia — {tipo}")
         saida = io.BytesIO()
         img.save(saida, "PNG")
         saida.seek(0)
