@@ -2,13 +2,13 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 import io
 import json
- st.set_page_config(page_title="Lumina IA — Controle Total", page_icon="👑", layout="wide")
- # ⚙️ DADOS DO DONO
- DONO_NOME = "Gilmar Gnann Guimarães"
- DONO_PIX = "nenegnann@gmail.com"
- SENHA_OPERADOR = "2026"  # ← Você pode mudar essa senha quando quiser!
- # 📦 CONFIGURAÇÕES PADRÃO (aqui você muda tudo!)
- config = {
+st.set_page_config(page_title="Lumina IA — Controle Total", page_icon="👑", layout="wide")
+# ⚙️ DADOS DO DONO
+DONO_NOME = "Gilmar Gnann Guimarães"
+DONO_PIX = "nenegnann@gmail.com"
+SENHA_OPERADOR = "2026"  # ← Você pode mudar essa senha quando quiser!
+# 📦 CONFIGURAÇÕES PADRÃO (aqui você muda tudo!)
+config = {
      "nome_projeto": "Lumina IA",
      "cor_fundo_padrao": "#22DD55",
      "cor_texto_padrao": "#000000",
