@@ -1,5 +1,5 @@
 import streamlit as st
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import io
 
 st.set_page_config(page_title="Lumina IA", page_icon="✨", layout="wide")
@@ -26,8 +26,10 @@ with aba1:
         
         fonte = ImageFont.load_default()
         bbox = desenho.textbbox((0,0), texto, font=fonte)
-        x = (800 - (bbox[2]-bbox[0])) // 2
-        y = (400 - (bbox[3]-bbox[1])) // 2
+        lar_texto = bbox[2] - bbox[0]
+        alt_texto = bbox[3] - bbox[1]
+        x = (800 - lar_texto) // 2
+        y = (400 - alt_texto) // 2
         desenho.text((x, y), texto, fill=cor_texto, font=fonte)
         
         buf = io.BytesIO()
