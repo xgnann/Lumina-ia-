@@ -26,18 +26,22 @@ with aba1:
         
         fonte = ImageFont.load_default()
         bbox = desenho.textbbox((0,0), texto, font=fonte)
-        lar_texto = bbox[2] - bbox[0]
-        alt_texto = bbox[3] - bbox[1]
-        x = (800 - lar_texto) // 2
-        y = (400 - alt_texto) // 2
+        lar = bbox[2] - bbox[0]
+        alt = bbox[3] - bbox[1]
+        x = (800 - lar) // 2
+        y = (400 - alt) // 2
         desenho.text((x, y), texto, fill=cor_texto, font=fonte)
         
         buf = io.BytesIO()
         img.save(buf, "PNG")
-        dados = buf.getvalue()
+        buf.seek(0)
         
-        st.image(dados, caption="Sua arte ✨", use_column_width=True)
-        st.download_button("📥 Baixar", dados, f"{tipo}.png", "image/png")
+        st.image(buf, caption="Sua arte ✨", use_column_width=True)
+        
+        buf2 = io.BytesIO()
+        img.save(buf2, "PNG")
+        buf2.seek(0)
+        st.download_button("📥 Baixar", buf2, f"{tipo}.png", "image/png")
 
 with aba2:
     for item in ["Adesivo", "Lona", "ACM", "Letra Caixa"]:
