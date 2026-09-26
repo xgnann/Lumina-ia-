@@ -24,7 +24,11 @@ with aba1:
         img = Image.new("RGB", (800, 400), cor_fundo)
         desenho = ImageDraw.Draw(img)
         
-        fonte = ImageFont.load_default()
+        try:
+            fonte = ImageFont.truetype("arial.ttf", 50)
+        except:
+            fonte = ImageFont.load_default()
+        
         bbox = desenho.textbbox((0,0), texto, font=fonte)
         lar = bbox[2] - bbox[0]
         alt = bbox[3] - bbox[1]
@@ -32,13 +36,15 @@ with aba1:
         y = (400 - alt) // 2
         desenho.text((x, y), texto, fill=cor_texto, font=fonte)
         
-        # ✅ MÉTODO QUE FUNCIONA NO STREAMLIT CLOUD
         buf = io.BytesIO()
         img.save(buf, format="PNG")
-        dados_imagem = buf.getvalue()  # ← Transforma em bytes puro
+        buf.seek(0)
         
-        st.image(dados_imagem, caption="Sua arte ✨", use_column_width=True)
-        st.download_button("📥 Baixar", dados_imagem, f"{tipo}.png", "image/png")
+        # ✅ AQUI ESTÁ A MUDANÇA IMPORTANTE
+        st.image(buf.getvalue(), caption="Sua arte ✨", use_column_width=True)
+        
+        buf.seek(0)
+        st.download_button("📥 Baixar", buf, f"{tipo}.png", "image/png")
 
 with aba2:
     for item in ["Adesivo", "Lona", "ACM", "Letra Caixa"]:
