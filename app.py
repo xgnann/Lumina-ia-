@@ -39,7 +39,7 @@ with st.expander("🔒 Área do Criador"):
         st.success(f"✅ {DONO_NOME}")
         st.info(f"PIX: {DONO_PIX}")
         st.session_state.chave_gemini = st.text_input("Chave Gemini", type="password", value=st.session_state.chave_gemini)
-        st.caption("Aceita qualquer formato de chave")
+        st.caption("Sua chave já está configurada!")
         if st.button("🚪 Sair"):
             st.session_state.logado_dono = False
             st.rerun()
@@ -68,23 +68,35 @@ def responder_ia(mensagem):
     if not chave:
         return "⚠️ Coloque sua chave na Área do Criador acima."
     
-    modelos = [
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-pro"
-    ]
+    # Detecta tipo de chave e usa endereço certo
+    if chave.startswith("AQ."):
+        # Chave nova (Google Cloud) → usa Vertex AI
+        url = "https://aiplatform.googleapis.com/v1/projects/default/locations/us-central1/publishers/google/models/gemini-2.0-flash:generateContent"
+        headers = {"Content-Type": "application/json", "x-goog-api-key": chave}
+        dados = {
+            "contents": [{
+                "role": "user",
+                "parts": [{"text": f"Responda em português do Brasil de forma simples e amigável: {mensagem}"}]
+            }]
+        }
+    else:
+        # Chave tradicional (AIza...) → usa endereço antigo
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={chave}"
+        headers = {"Content-Type": "application/json"}
+        dados = {
+            "contents": [{
+                "parts": [{"text": f"Responda em português do Brasil de forma simples e amigável: {mensagem}"}]
+            }]
+        }
     
-    for modelo in modelos:
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1/models/{modelo}:generateContent?key={chave}"
-            dados = {"contents": [{"parts": [{"text": f"Responda em português do Brasil de forma simples e amigável: {mensagem}"}]}]}
-            r = requests.post(url, json=dados, timeout=30)
-            if r.status_code == 200:
-                return r.json()["candidates"][0]["content"]["parts"][0]["text"]
-        except:
-            continue
-    
-    return "⚠️ Chave não funciona. Tente pegar pelo site: makersuite.google.com → ícone de chave 🔑 → chave que começa com AIzaSy..."
+    try:
+        r = requests.post(url, json=dados, headers=headers, timeout=30)
+        if r.status_code == 200:
+            resp = r.json()
+            return resp["candidates"][0]["content"]["parts"][0]["text"]
+        return f"⚠️ Erro {r.status_code}. Verifique se a chave está ativa."
+    except Exception as e:
+        return f"⚠️ Sem conexão ou formato incompatível: {str(e)}"
 
 aba1, aba2 = st.tabs(["💬 Conversar", "🎨 Criar Projeto"])
 
@@ -119,42 +131,4 @@ with aba2:
         if not texto:
             st.warning("Digite um texto!")
         else:
-            larg, alt = medidas[tipo]
-            if descricao:
-                with st.spinner("Desenhando..."):
-                    try:
-                        url_img = f"https://image.pollinations.ai/prompt/{descricao.replace(' ', '%20')}?width={larg}&height={alt}&nologo=true"
-                        r_img = requests.get(url_img, timeout=120)
-                        img = Image.open(io.BytesIO(r_img.content)).resize((larg, alt)) if r_img.status_code == 200 else Image.new("RGB", (larg, alt), cor_fundo)
-                    except:
-                        img = Image.new("RGB", (larg, alt), cor_fundo)
-            elif arquivo:
-                img = Image.open(arquivo).convert("RGB").resize((larg, alt))
-            else:
-                img = Image.new("RGB", (larg, alt), cor_fundo)
-            
-            desenho = ImageDraw.Draw(img)
-            try:
-                fonte = ImageFont.truetype("arial.ttf", tamanho)
-            except:
-                fonte = ImageFont.load_default()
-            bbox = desenho.textbbox((0, 0), texto, font=fonte)
-            lar_t, alt_t = bbox[2]-bbox[0], bbox[3]-bbox[1]
-            x, y = (larg-lar_t)//2, (alt-alt_t)//2
-            if sombra:
-                desenho.text((x+3, y+3), texto, fill="#000000", font=fonte)
-            desenho.text((x, y), texto, fill=cor_letra, font=fonte)
-            
-            buffer = io.BytesIO()
-            img.save(buffer, format="PNG")
-            buffer.seek(0)
-            st.image(buffer, caption=f"{tipo} — {texto}", use_column_width=True)
-            with st.expander("🔍 Ampliar"):
-                buffer.seek(0)
-                st.image(buffer, caption="Ampliada")
-            buffer.seek(0)
-            st.download_button("📥 Baixar", buffer, f"{tipo}.png", "image/png", type="primary", use_container_width=True)
-            if st.session_state.usuario:
-                st.session_state.usuario["usos"] += 1
-
-st.caption(f"© 2026 — {DONO_NOME}")
+            larg, alt = medidas
