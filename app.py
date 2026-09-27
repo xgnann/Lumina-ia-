@@ -37,9 +37,9 @@ with st.expander("🔒 Área do Criador"):
                 st.error("❌ Errada")
     else:
         st.success(f"✅ {DONO_NOME}")
-        st.info(f"PIX: `{DONO_PIX}`")
+        st.info(f"PIX: {DONO_PIX}")
         st.session_state.chave_gemini = st.text_input("Chave Gemini", type="password", value=st.session_state.chave_gemini)
-        st.caption("Grátis: makersuite.google.com")
+        st.caption("Sua chave já está aceita!")
         if st.button("🚪 Sair"):
             st.session_state.logado_dono = False
             st.rerun()
@@ -56,44 +56,43 @@ if not st.session_state.usuario:
             st.success(f"Bem-vindo, {nome}!")
             st.rerun()
 else:
-    st.markdown(f"👋 Olá, **{st.session_state.usuario['nome']}**!")
+    st.markdown(f"👋 Olá, {st.session_state.usuario['nome']}!")
     if st.button("🔄 Sair"):
         st.session_state.usuario = None
         st.rerun()
 
 st.divider()
 
-def responder(mensagem):
-    if not st.session_state.chave_gemini:
-        return "⚠️ Configure a chave na Área do Criador."
-    hist = ""
-    for m in st.session_state.conversa[-4:]:
-        hist += f"{m['q']}: {m['t']}\n"
+def responder_ia(mensagem):
+    chave = st.session_state.chave_gemini.strip()
+    if not chave:
+        return "⚠️ Coloque sua chave na Área do Criador acima."
     try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={st.session_state.chave_gemini}"
-        r = requests.post(url, json={"contents": [{"parts": [{"text": f"Fale simples em português.\n{hist}\nPergunta: {mensagem}\nResposta:"}]}]}, timeout=30)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={chave}"
+        dados = {"contents": [{"parts": [{"text": f"Responda em português do Brasil de forma simples e amigável. Pergunta: {mensagem}"}]}]}
+        r = requests.post(url, json=dados, timeout=30)
         if r.status_code == 200:
             return r.json()["candidates"][0]["content"]["parts"][0]["text"]
-        return "⚠️ Verifique a chave"
-    except:
-        return "⚠️ Sem conexão"
+        return f"⚠️ Erro {r.status_code}: chave não funciona ou expirou."
+    except Exception as e:
+        return f"⚠️ Sem conexão: {str(e)}"
 
 aba1, aba2 = st.tabs(["💬 Conversar", "🎨 Criar Projeto"])
 
 with aba1:
     st.subheader("Fale com a Lumina")
-    for m in st.session_state.conversa:
-        with st.chat_message(m["q"]):
-            st.write(m["t"])
-    pergunta = st.chat_input("Sua pergunta...")
+    for msg in st.session_state.conversa:
+        with st.chat_message(msg["quem"]):
+            st.write(msg["texto"])
+    pergunta = st.chat_input("Escreva aqui...")
     if pergunta:
-        st.session_state.conversa.append({"q": "você", "t": pergunta})
+        st.session_state.conversa.append({"quem": "você", "texto": pergunta})
         with st.chat_message("você"):
             st.write(pergunta)
         with st.chat_message("Lumina"), st.spinner("Pensando..."):
-            res = responder(pergunta)
-            st.write(res)
-        st.session_state.conversa.append({"q": "Lumina", "t": res})
+            resposta = responder_ia(pergunta)
+            st.write(resposta)
+        st.session_state.conversa.append({"quem": "Lumina", "texto": resposta})
 
 with aba2:
     st.subheader("Monte sua peça")
@@ -137,21 +136,15 @@ with aba2:
                 desenho.text((x+3, y+3), texto, fill="#000000", font=fonte)
             desenho.text((x, y), texto, fill=cor_letra, font=fonte)
             
-            saida = io.BytesIO()
-            img.save(saida, format="PNG")
-            saida.seek(0)
-            
-            legenda = f"{tipo} — {texto}"
-            st.image(saida, caption=legenda, use_column_width=True)
-            
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            buffer.seek(0)
+            st.image(buffer, caption=f"{tipo} — {texto}", use_column_width=True)
             with st.expander("🔍 Ampliar"):
-                saida.seek(0)
-                st.image(saida, caption="Ampliada")
-            
-            saida.seek(0)
-            nome_arq = f"{tipo}.png"
-            st.download_button("📥 Baixar", saida, nome_arq, "image/png", type="primary", use_container_width=True)
-            
+                buffer.seek(0)
+                st.image(buffer, caption="Ampliada")
+            buffer.seek(0)
+            st.download_button("📥 Baixar", buffer, f"{tipo}.png", "image/png", type="primary", use_container_width=True)
             if st.session_state.usuario:
                 st.session_state.usuario["usos"] += 1
 
