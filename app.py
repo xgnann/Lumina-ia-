@@ -140,12 +140,18 @@ with aba2:
             saida = io.BytesIO()
             img.save(saida, format="PNG")
             saida.seek(0)
-            st.image(saida, caption=f"{tipo} — {texto}", use_column_width=True)
+            
+            legenda = f"{tipo} — {texto}"
+            st.image(saida, caption=legenda, use_column_width=True)
+            
             with st.expander("🔍 Ampliar"):
                 saida.seek(0)
                 st.image(saida, caption="Ampliada")
+            
             saida.seek(0)
-            st.download_button("📥 Baixar", saida, f"{tipo}.png", "image/png", type="primary", use_container_width=True)
+            nome_arq = f"{tipo}.png"
+            st.download_button("📥 Baixar", saida, nome_arq, "image/png", type="primary", use_container_width=True)
+            
             if st.session_state.usuario:
                 st.session_state.usuario["usos"] += 1
 
