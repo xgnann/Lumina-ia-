@@ -16,7 +16,7 @@ st.set_page_config(
     menu_items={"About": f"© 2026 — {DONO_NOME}"}
 )
 
-# ====================== ESTILO BONITO E FÁCIL ======================
+# ====================== ESTILO ======================
 estilo = """
 <style>
 .stApp {
@@ -43,13 +43,6 @@ estilo = """
     border: none;
     font-weight: bold;
 }
-.zoom-img {
-    cursor: zoom-in;
-    transition: transform 0.3s ease;
-}
-.zoom-img:hover {
-    transform: scale(1.02);
-}
 .nivel-bronze { border-left: 4px solid #cd7f32; padding-left: 1rem; }
 .nivel-prata { border-left: 4px solid #c0c0c0; padding-left: 1rem; }
 .nivel-ouro { border-left: 4px solid #ffd700; padding-left: 1rem; }
@@ -61,7 +54,7 @@ st.markdown(estilo, unsafe_allow_html=True)
 if "logado_dono" not in st.session_state:
     st.session_state.logado_dono = False
 if "usuario" not in st.session_state:
-    st.session_state.usuario = None  # None = visitante | dict = cadastrado
+    st.session_state.usuario = None
 if "conversa" not in st.session_state:
     st.session_state.conversa = []
 if "chave_gemini" not in st.session_state:
@@ -80,10 +73,8 @@ if "img_criada" not in st.session_state:
     st.session_state.img_criada = None
 if "img_envio" not in st.session_state:
     st.session_state.img_envio = None
-if "zoom_ativo" not in st.session_state:
-    st.session_state.zoom_ativo = False
 
-medidas = {
+medidas_padrao = {
     "Fachada": (1200, 600),
     "Placa": (900, 600),
     "Banner": (1200, 450),
@@ -103,16 +94,34 @@ def nivel_usuario():
     else:
         return "🟢 Cadastrado", "bronze", "Qualidade melhorada (1200×600)"
 
-def resolucao_atual():
+def obter_resolucao():
     _, nivel, _ = nivel_usuario()
     if nivel == "ouro":
-        return {"Fachada": (1920, 960), "Placa": (1400, 930), "Banner": (1920, 720), "Cartão de Visita": (720, 432), "Adesivo": (960, 960)}
+        return {
+            "Fachada": (1920, 960),
+            "Placa": (1400, 930),
+            "Banner": (1920, 720),
+            "Cartão de Visita": (720, 432),
+            "Adesivo": (960, 960)
+        }
     elif nivel == "prata":
-        return {"Fachada": (1400, 700), "Placa": (1050, 700), "Banner": (1400, 525), "Cartão de Visita": (525, 315), "Adesivo": (700, 700)}
+        return {
+            "Fachada": (1400, 700),
+            "Placa": (1050, 700),
+            "Banner": (1400, 525),
+            "Cartão de Visita": (525, 315),
+            "Adesivo": (700, 700)
+        }
     elif nivel == "bronze" and st.session_state.usuario:
-        return medidas
+        return medidas_padrao
     else:
-        return {"Fachada": (800, 400), "Placa": (600, 400), "Banner": (800, 300), "Cartão de Visita": (300, 180), "Adesivo": (400, 400)}
+        return {
+            "Fachada": (800, 400),
+            "Placa": (600, 400),
+            "Banner": (800, 300),
+            "Cartão de Visita": (300, 180),
+            "Adesivo": (400, 400)
+        }
 
 # ====================== ÁREA DO DONO ======================
 with st.expander("🔒 Área do Criador"):
@@ -128,17 +137,18 @@ with st.expander("🔒 Área do Criador"):
         st.success(f"✅ {DONO_NOME}")
         st.info(f"PIX: `{DONO_PIX}`")
         st.divider()
-        st.session_state.chave_gemini = st.text_input("Chave Gemini", type="password", value=st.session_state.chave_gemini)
+        st.session_state.chave_gemini = st.text_input(
+            "Chave Gemini",
+            type="password",
+            value=st.session_state.chave_gemini
+        )
         st.caption("Grátis: makersuite.google.com → Get API key")
-        st.divider()
-        st.subheader("Gerenciar Usuários")
-        st.info("💡 Os usuários sobem de nível conforme uso!")
         st.divider()
         if st.button("🚪 Sair"):
             st.session_state.logado_dono = False
             st.rerun()
 
-# ====================== CABEÇALHO E CADASTRO ======================
+# ====================== CABEÇALHO ======================
 st.title("🌟 Lumina IA — Crie sua Arte Visual")
 rotulo_nivel, cor_nivel, qualidade = nivel_usuario()
 st.markdown(f"""
@@ -148,14 +158,14 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# CADASTRO SIMPLES
+# CADASTRO
 if not st.session_state.usuario:
     st.markdown("### 📝 Cadastre-se para qualidade melhor!")
     with st.form("cadastro"):
         nome = st.text_input("Seu nome")
         email = st.text_input("Seu e-mail")
-        st.form_submit_button("✅ Cadastrar Grátis", type="primary")
-        if nome and email:
+        enviado = st.form_submit_button("✅ Cadastrar Grátis", type="primary")
+        if enviado and nome and email:
             st.session_state.usuario = {
                 "nome": nome,
                 "email": email,
@@ -173,25 +183,27 @@ else:
             st.session_state.conversa = []
             st.rerun()
     with col2:
-        if st.session_state.usuario["usos"] >= 5 and st.session_state.usuario["nivel"] == "bronze":
+        usos = st.session_state.usuario["usos"]
+        nivel_atual = st.session_state.usuario["nivel"]
+        if usos >= 5 and nivel_atual == "bronze":
             st.session_state.usuario["nivel"] = "prata"
-            st.success("🎉 Subiu para ⭐ Prata — qualidade ALTA liberada!")
-        if st.session_state.usuario["usos"] >= 15 and st.session_state.usuario["nivel"] == "prata":
+            st.success("🎉 Subiu para ⭐ Prata!")
+        if usos >= 15 and nivel_atual == "prata":
             st.session_state.usuario["nivel"] = "ouro"
-            st.success("🏆 Subiu para ✨ Ouro — MÁXIMA qualidade!")
+            st.success("🏆 Subiu para ✨ Ouro!")
 
 st.divider()
 
 # ====================== FUNÇÃO DA IA ======================
 def responder(mensagem):
     if not st.session_state.chave_gemini:
-        return "⚠️ Aguardando configuração do sistema."
+        return "⚠️ Configure a chave do Gemini na Área do Criador."
     
     hist = ""
     for m in st.session_state.conversa[-5:]:
         hist += f"{m['quem']}: {m['texto']}\n"
     
-    prompt = f"""Você é Lumina IA, amigável e prática. Fale simples, direto, em português do Brasil.
+    prompt = f"""Você é Lumina IA, amigável e prática. Responda em português do Brasil.
 {hist}
 Pergunta: {mensagem}
 Resposta:"""
@@ -201,11 +213,11 @@ Resposta:"""
         r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
         if r.status_code == 200:
             return r.json()["candidates"][0]["content"]["parts"][0]["text"]
-        return "⚠️ Tente novamente"
+        return "⚠️ Verifique a chave"
     except:
         return "⚠️ Sem conexão"
 
-# ====================== ABAS PRINCIPAIS ======================
+# ====================== ABAS ======================
 aba_conversa, aba_projeto = st.tabs(["💬 Conversar", "🎨 Criar Projeto"])
 
 # ABA 1 — CONVERSA
@@ -229,7 +241,7 @@ with aba_conversa:
 with aba_projeto:
     st.subheader("🎨 Monte seu Projeto")
     cfg = st.session_state.dados_proj
-    res = resolucao_atual()
+    res = obter_resolucao()
     
     col1, col2 = st.columns(2)
     with col1:
@@ -242,19 +254,21 @@ with aba_projeto:
         cfg["sombra"] = st.checkbox("💫 Sombra", value=cfg["sombra"])
     
     st.divider()
-    cfg["cena"] = st.text_area("🖼️ Descreva a imagem:", 
+    cfg["cena"] = st.text_area(
+        "🖼️ Descreva a imagem:",
         value=cfg["cena"],
-        placeholder="Ex: Barraca de coco na praia, areia branca, mar azul cristalino, sol...",
-        height=100)
+        placeholder="Ex: Barraca de coco na praia, areia branca, mar azul...",
+        height=100
+    )
     
     if st.button("✨ Gerar Imagem", type="primary", use_container_width=True):
         if cfg["cena"]:
             with st.spinner("Desenhando..."):
                 try:
                     larg, alt = res[cfg["tipo"]]
-                    prompt = f"{cfg['cena']}, sinalização comercial, cores vivas, alta definição, sem texto"
-                    url = f"https://image.pollinations.ai/prompt/{prompt.replace(' ', '%20')}?width={larg}&height={alt}&nologo=true&quality=2"
-                    resp_img = requests.get(url, timeout=120)
+                    prompt_img = f"{cfg['cena']}, sinalização comercial, cores vivas, alta definição, sem texto"
+                    url_img = f"https://image.pollinations.ai/prompt/{prompt_img.replace(' ', '%20')}?width={larg}&height={alt}&nologo=true&quality=2"
+                    resp_img = requests.get(url_img, timeout=120)
                     if resp_img.status_code == 200:
                         st.session_state.img_criada = Image.open(io.BytesIO(resp_img.content))
                         if st.session_state.usuario:
@@ -277,7 +291,7 @@ with aba_projeto:
     
     st.divider()
     
-    # RESULTADO COM ZOOM
+    # RESULTADO — CORRIGIDO ✅
     st.subheader("👁️ Resultado Final (clique para ampliar)")
     
     if not cfg["texto"]:
@@ -285,18 +299,23 @@ with aba_projeto:
     else:
         larg, alt = res[cfg["tipo"]]
         
+        # Escolher imagem de fundo
+        imagem_final = None
+        fonte_info = ""
         if st.session_state.img_criada:
-            img = st.session_state.img_criada.resize((larg, alt))
-            st.info(f"🖼️ Imagem criada — {larg}×{alt}")
+            imagem_final = st.session_state.img_criada.resize((larg, alt))
+            fonte_info = f"🖼️ Imagem criada — {larg}×{alt}"
         elif st.session_state.img_envio:
-            img = Image.open(st.session_state.img_envio).convert("RGB").resize((larg, alt))
-            st.info(f"📷 Sua imagem — {larg}×{alt}")
+            imagem_final = Image.open(st.session_state.img_envio).convert("RGB").resize((larg, alt))
+            fonte_info = f"📷 Sua imagem — {larg}×{alt}"
         else:
-            img = Image.new("RGB", (larg, alt), cfg["cor_fundo"])
-            st.info(f"🎨 Cor de fundo — {larg}×{alt}")
+            imagem_final = Image.new("RGB", (larg, alt), cfg["cor_fundo"])
+            fonte_info = f"🎨 Cor de fundo — {larg}×{alt}"
         
-        # Escrever texto
-        desenho = ImageDraw.Draw(img)
+        st.info(fonte_info)
+        
+        # Desenhar texto
+        desenho = ImageDraw.Draw(imagem_final)
         try:
             fonte = ImageFont.truetype("arial.ttf", cfg["tam_letra"])
         except:
@@ -312,20 +331,24 @@ with aba_projeto:
             desenho.text((x+3, y+3), cfg["texto"], fill="#000000", font=fonte)
         desenho.text((x, y), cfg["texto"], fill=cfg["cor_letra"], font=fonte)
         
-        # ZOOM — exibe em tamanho completo ao clicar
-        st.image(img, caption=f"{cfg['tipo']} — {cfg['texto']}", use_column_width=True, output_format="PNG")
+        # Exibir imagem — CORRIGIDO ✅
+        legenda = f"{cfg['tipo']} — {cfg['texto']}"
+        st.image(imagem_final, caption=legenda, use_column_width=True)
         
         with st.expander("🔍 Ampliar imagem"):
-            st.image(img, caption="Visualização ampliada", width=larg)
+            st.image(imagem_final, caption="Visualização ampliada", width=larg)
         
         # Download
         saida = io.BytesIO()
-        img.save(saida, "PNG", quality=98)
+        imagem_final.save(saida, "PNG", quality=98)
         saida.seek(0)
         st.download_button(
-            "📥 BAIXAR EM ALTA", saida,
+            "📥 BAIXAR EM ALTA",
+            saida,
             f"{cfg['tipo']}_{cfg['texto'].replace(' ', '_')}.png",
-            "image/png", type="primary", use_container_width=True
+            "image/png",
+            type="primary",
+            use_container_width=True
         )
 
 st.caption("© 2026 — Lumina IA | Propriedade Exclusiva")
