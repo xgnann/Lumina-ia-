@@ -3,293 +3,329 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 import requests
 
-# ====================== DADOS EXCLUSIVOS ======================
-ADM_NOME = "Gilmar Gnann Guimarães"
-ADM_PIX = "nenegnann@gmail.com"
-ADM_SENHA = "2026"
+# ====================== SEUS DADOS ======================
+DONO_NOME = "Gilmar Gnann Guimarães"
+DONO_PIX = "nenegnann@gmail.com"
+SENHA_DONO = "2026"
 
-# ====================== CONFIGURAÇÃO DE PÁGINA ======================
+# ====================== CONFIGURAÇÃO ======================
 st.set_page_config(
-    page_title="Lumina IA — Painel Administrativo",
-    page_icon="✨",
+    page_title="Lumina IA — Crie Grátis",
+    page_icon="🌟",
     layout="wide",
-    initial_sidebar_state="expanded"
+    menu_items={"About": f"© 2026 — {DONO_NOME}"}
 )
 
-# ====================== ESTILO VISUAL OFICIAL ======================
+# ====================== ESTILO BONITO E FÁCIL ======================
 estilo = """
 <style>
-/* Fundo geral */
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: #f8fafc;
+    background: linear-gradient(180deg, #e6f3ff, #f0f9ff);
+    color: #1e293b;
+    font-family: 'Segoe UI', sans-serif;
 }
-
-/* Cartões e caixas */
 .caixa {
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 12px;
+    background: white;
+    border-radius: 16px;
     padding: 1.5rem;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 1rem;
 }
-
-/* Títulos */
-h1, h2, h3 { color: #fbbf24; }
-
-/* Botões */
-button[kind="primary"] {
-    background: linear-gradient(90deg, #f59e0b, #d97706);
+.destaque {
+    background: linear-gradient(90deg, #10b981, #0ea5e9);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-weight: bold;
+}
+.botao-principal {
+    background: linear-gradient(90deg, #10b981, #0284c7);
     border: none;
     font-weight: bold;
 }
-
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background: rgba(15, 23, 42, 0.95);
-    border-right: 1px solid rgba(59, 130, 246, 0.2);
+.zoom-img {
+    cursor: zoom-in;
+    transition: transform 0.3s ease;
 }
+.zoom-img:hover {
+    transform: scale(1.02);
+}
+.nivel-bronze { border-left: 4px solid #cd7f32; padding-left: 1rem; }
+.nivel-prata { border-left: 4px solid #c0c0c0; padding-left: 1rem; }
+.nivel-ouro { border-left: 4px solid #ffd700; padding-left: 1rem; }
 </style>
 """
 st.markdown(estilo, unsafe_allow_html=True)
 
-# ====================== CONTROLE DE ACESSO ======================
-if "adm_logado" not in st.session_state:
-    st.session_state.adm_logado = False
-
-if not st.session_state.adm_logado:
-    st.markdown('<div class="caixa">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("https://image.pollinations.ai/prompt/light%20glowing%20star%20logo%20gold%20blue%20minimalist", width=120)
-        st.title("🔒 LUMINA IA")
-        st.subheader("Painel de Controle — Acesso Exclusivo")
-        st.divider()
-        
-        senha_digitada = st.text_input("Digite sua senha de Administrador", type="password", placeholder="••••••••")
-        
-        if st.button("🔑 ENTRAR NO SISTEMA", type="primary", use_container_width=True):
-            if senha_digitada == ADM_SENHA:
-                st.session_state.adm_logado = True
-                st.rerun()
-            else:
-                st.error("❌ Senha incorreta — acesso negado")
-        
-        st.caption(f"© 2026 — Propriedade Exclusiva: {ADM_NOME}\nTodos os direitos reservados")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
-
-# ====================== SÓ DEPOIS DE LOGAR ======================
-if "config" not in st.session_state:
-    st.session_state.config = {
-        "cor_fundo": "#22DD55",
-        "cor_texto": "#000000",
-        "tamanho_fonte": 42,
-        "sombra": True,
+# ====================== INICIALIZAÇÃO ======================
+if "logado_dono" not in st.session_state:
+    st.session_state.logado_dono = False
+if "usuario" not in st.session_state:
+    st.session_state.usuario = None  # None = visitante | dict = cadastrado
+if "conversa" not in st.session_state:
+    st.session_state.conversa = []
+if "chave_gemini" not in st.session_state:
+    st.session_state.chave_gemini = ""
+if "dados_proj" not in st.session_state:
+    st.session_state.dados_proj = {
         "texto": "Barraca de Coco",
         "tipo": "Fachada",
-        "descricao_imagem": ""
+        "cor_fundo": "#22c55e",
+        "cor_letra": "#000000",
+        "tam_letra": 48,
+        "sombra": True,
+        "cena": ""
     }
-if "mensagens" not in st.session_state:
-    st.session_state.mensagens = []
-if "imagem_gerada" not in st.session_state:
-    st.session_state.imagem_gerada = None
-if "foto_usuario" not in st.session_state:
-    st.session_state.foto_usuario = None
+if "img_criada" not in st.session_state:
+    st.session_state.img_criada = None
+if "img_envio" not in st.session_state:
+    st.session_state.img_envio = None
+if "zoom_ativo" not in st.session_state:
+    st.session_state.zoom_ativo = False
 
-dimensoes = {
-    "Fachada": (800, 450),
-    "Placa": (600, 400),
-    "Banner": (900, 350),
-    "Cartão de Visita": (350, 200),
-    "Adesivo": (400, 400)
+medidas = {
+    "Fachada": (1200, 600),
+    "Placa": (900, 600),
+    "Banner": (1200, 450),
+    "Cartão de Visita": (450, 270),
+    "Adesivo": (600, 600)
 }
 
-# ====================== PROCESSADOR DE COMANDOS ======================
-def processar_comando(msg_texto):
-    msg = msg_texto.lower()
-    c = st.session_state.config
-    resp = []
+# ====================== NÍVEIS DE ACESSO ======================
+def nivel_usuario():
+    if not st.session_state.usuario:
+        return "Visitante", "bronze", "Baixa resolução (800×400)"
+    cad = st.session_state.usuario
+    if cad.get("nivel", "bronze") == "ouro":
+        return "✨ Ouro", "ouro", "Máxima qualidade (1920×960)"
+    elif cad.get("nivel", "prata") == "prata":
+        return "⭐ Prata", "prata", "Alta qualidade (1400×700)"
+    else:
+        return "🟢 Cadastrado", "bronze", "Qualidade melhorada (1200×600)"
 
-    # Texto principal
-    for alvo in ["texto é", "diz", "nome é", "colocar"]:
-        if alvo in msg:
-            t = msg_texto.split(alvo)[-1].strip()
-            if t: c["texto"] = t; resp.append(f"✅ Texto definido: **{t}**")
-            break
+def resolucao_atual():
+    _, nivel, _ = nivel_usuario()
+    if nivel == "ouro":
+        return {"Fachada": (1920, 960), "Placa": (1400, 930), "Banner": (1920, 720), "Cartão de Visita": (720, 432), "Adesivo": (960, 960)}
+    elif nivel == "prata":
+        return {"Fachada": (1400, 700), "Placa": (1050, 700), "Banner": (1400, 525), "Cartão de Visita": (525, 315), "Adesivo": (700, 700)}
+    elif nivel == "bronze" and st.session_state.usuario:
+        return medidas
+    else:
+        return {"Fachada": (800, 400), "Placa": (600, 400), "Banner": (800, 300), "Cartão de Visita": (300, 180), "Adesivo": (400, 400)}
 
-    # Cores de fundo
-    if "fundo" in msg:
-        if "azul" in msg: c["cor_fundo"] = "#3B82F6"; resp.append("✅ Fundo → Azul")
-        elif "verde" in msg: c["cor_fundo"] = "#22C55E"; resp.append("✅ Fundo → Verde")
-        elif "amarelo" in msg: c["cor_fundo"] = "#EAB308"; resp.append("✅ Fundo → Amarelo")
-        elif "preto" in msg: c["cor_fundo"] = "#0F172A"; resp.append("✅ Fundo → Escuro")
-        elif "branco" in msg: c["cor_fundo"] = "#F8FAFC"; resp.append("✅ Fundo → Branco")
+# ====================== ÁREA DO DONO ======================
+with st.expander("🔒 Área do Criador"):
+    if not st.session_state.logado_dono:
+        senha = st.text_input("Senha do Criador", type="password")
+        if st.button("🔑 Entrar"):
+            if senha == SENHA_DONO:
+                st.session_state.logado_dono = True
+                st.rerun()
+            else:
+                st.error("❌ Sem permissão")
+    else:
+        st.success(f"✅ {DONO_NOME}")
+        st.info(f"PIX: `{DONO_PIX}`")
+        st.divider()
+        st.session_state.chave_gemini = st.text_input("Chave Gemini", type="password", value=st.session_state.chave_gemini)
+        st.caption("Grátis: makersuite.google.com → Get API key")
+        st.divider()
+        st.subheader("Gerenciar Usuários")
+        st.info("💡 Os usuários sobem de nível conforme uso!")
+        st.divider()
+        if st.button("🚪 Sair"):
+            st.session_state.logado_dono = False
+            st.rerun()
 
-    # Cores de letra
-    if "letra" in msg or "cor do texto" in msg:
-        if "branca" in msg: c["cor_texto"] = "#FFFFFF"; resp.append("✅ Letra → Branca")
-        elif "preta" in msg: c["cor_texto"] = "#000000"; resp.append("✅ Letra → Preta")
-        elif "dourada" in msg: c["cor_texto"] = "#FBBF24"; resp.append("✅ Letra → Dourada")
-        elif "vermelha" in msg: c["cor_texto"] = "#EF4444"; resp.append("✅ Letra → Vermelha")
+# ====================== CABEÇALHO E CADASTRO ======================
+st.title("🌟 Lumina IA — Crie sua Arte Visual")
+rotulo_nivel, cor_nivel, qualidade = nivel_usuario()
+st.markdown(f"""
+<div class="caixa nivel-{cor_nivel}">
+    <strong>Seu nível:</strong> {rotulo_nivel}<br>
+    <small>Qualidade da imagem: {qualidade}</small>
+</div>
+""", unsafe_allow_html=True)
 
-    # Tamanho
-    if "maior" in msg or "aumentar" in msg:
-        c["tamanho_fonte"] = min(80, c["tamanho_fonte"] + 10)
-        resp.append(f"✅ Tamanho → {c['tamanho_fonte']}")
-    if "menor" in msg or "diminuir" in msg:
-        c["tamanho_fonte"] = max(20, c["tamanho_fonte"] - 10)
-        resp.append(f"✅ Tamanho → {c['tamanho_fonte']}")
+# CADASTRO SIMPLES
+if not st.session_state.usuario:
+    st.markdown("### 📝 Cadastre-se para qualidade melhor!")
+    with st.form("cadastro"):
+        nome = st.text_input("Seu nome")
+        email = st.text_input("Seu e-mail")
+        st.form_submit_button("✅ Cadastrar Grátis", type="primary")
+        if nome and email:
+            st.session_state.usuario = {
+                "nome": nome,
+                "email": email,
+                "nivel": "bronze",
+                "usos": 0
+            }
+            st.success(f"🎉 Bem-vindo, {nome}! Qualidade melhorada liberada!")
+            st.rerun()
+else:
+    st.markdown(f"👋 Olá, **{st.session_state.usuario['nome']}**!")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔄 Sair da conta"):
+            st.session_state.usuario = None
+            st.session_state.conversa = []
+            st.rerun()
+    with col2:
+        if st.session_state.usuario["usos"] >= 5 and st.session_state.usuario["nivel"] == "bronze":
+            st.session_state.usuario["nivel"] = "prata"
+            st.success("🎉 Subiu para ⭐ Prata — qualidade ALTA liberada!")
+        if st.session_state.usuario["usos"] >= 15 and st.session_state.usuario["nivel"] == "prata":
+            st.session_state.usuario["nivel"] = "ouro"
+            st.success("🏆 Subiu para ✨ Ouro — MÁXIMA qualidade!")
 
-    # Tipo de peça
-    if "fachada" in msg: c["tipo"] = "Fachada"; resp.append("✅ Formato → Fachada")
-    if "placa" in msg: c["tipo"] = "Placa"; resp.append("✅ Formato → Placa")
-    if "banner" in msg: c["tipo"] = "Banner"; resp.append("✅ Formato → Banner")
-    if "cartão" in msg: c["tipo"] = "Cartão de Visita"; resp.append("✅ Formato → Cartão")
-    if "adesivo" in msg: c["tipo"] = "Adesivo"; resp.append("✅ Formato → Adesivo")
+st.divider()
 
-    # Sombra
-    if "sombra" in msg:
-        if "tirar" in msg or "sem" in msg: c["sombra"] = False; resp.append("✅ Sombra desativada")
-        else: c["sombra"] = True; resp.append("✅ Sombra ativada")
-
-    # Descrição de imagem
-    for alvo in ["imagem de", "cenário de", "fundo com"]:
-        if alvo in msg:
-            c["descricao_imagem"] = msg_texto.split(alvo)[-1].strip()
-            resp.append(f"✅ Cena registrada! Agora digite: **criar imagem**")
-            break
-
-    # Gerar imagem
-    if "criar imagem" in msg or "gerar imagem" in msg:
-        if c["descricao_imagem"]:
-            resp.append("🎨 Desenhando... aguarde!")
-            try:
-                larg, alt = dimensoes[c["tipo"]]
-                prompt = f"{c['descricao_imagem']}, sinalização comercial, cores vivas, alta qualidade, sem texto"
-                url = f"https://image.pollinations.ai/prompt/{prompt.replace(' ', '%20')}?width={larg}&height={alt}&nologo=true"
-                r = requests.get(url, timeout=90)
-                if r.status_code == 200:
-                    st.session_state.imagem_gerada = Image.open(io.BytesIO(r.content))
-                    resp.append("✅ Imagem pronta! Vá em 'Resultado'")
-                else:
-                    resp.append("⚠️ Sem conexão — envie sua foto")
-            except:
-                resp.append("⚠️ Tente mais tarde ou envie sua foto")
-        else:
-            resp.append("⚠️ Primeiro descreva: 'imagem de praia com coqueiros'")
-
-    if not resp:
-        resp.append("💡 Exemplos: fundo azul | texto é Loja do Zé | letra dourada | imagem de praia | criar imagem")
-    return resp
-
-# ====================== BARRA LATERAL ======================
-st.sidebar.markdown("## 👑 LUMINA IA")
-st.sidebar.markdown(f"**Admin:** {ADM_NOME}")
-st.sidebar.divider()
-st.sidebar.markdown("### 💳 Recebimento")
-st.sidebar.info(f"**PIX:**\n`{ADM_PIX}`")
-st.sidebar.divider()
-st.sidebar.markdown("### ⚙️ Atalhos")
-st.sidebar.markdown("""
-- `fundo azul`
-- `texto é ...`
-- `letra dourada`
-- `aumentar letra`
-- `imagem de ...`
-- `criar imagem`
-""")
-st.sidebar.divider()
-if st.sidebar.button("🚪 SAIR DO SISTEMA", use_container_width=True):
-    st.session_state.adm_logado = False
-    st.rerun()
-
-# ====================== ÁREA PRINCIPAL ======================
-st.header("✨ Painel de Controle")
-st.markdown("---")
-
-aba1, aba2, aba3 = st.tabs([
-    "💬 Comandos",
-    "📷 Usar Minha Foto",
-    "👁️ Resultado e Download"
-])
-
-# ABA 1 — COMANDOS
-with aba1:
-    st.subheader("Fale com o sistema")
-    st.info("Digite o que quer e eu faço automaticamente")
+# ====================== FUNÇÃO DA IA ======================
+def responder(mensagem):
+    if not st.session_state.chave_gemini:
+        return "⚠️ Aguardando configuração do sistema."
     
-    # Histórico
-    for msg in st.session_state.mensagens:
-        with st.chat_message(msg["funcao"]):
+    hist = ""
+    for m in st.session_state.conversa[-5:]:
+        hist += f"{m['quem']}: {m['texto']}\n"
+    
+    prompt = f"""Você é Lumina IA, amigável e prática. Fale simples, direto, em português do Brasil.
+{hist}
+Pergunta: {mensagem}
+Resposta:"""
+    
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={st.session_state.chave_gemini}"
+        r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
+        if r.status_code == 200:
+            return r.json()["candidates"][0]["content"]["parts"][0]["text"]
+        return "⚠️ Tente novamente"
+    except:
+        return "⚠️ Sem conexão"
+
+# ====================== ABAS PRINCIPAIS ======================
+aba_conversa, aba_projeto = st.tabs(["💬 Conversar", "🎨 Criar Projeto"])
+
+# ABA 1 — CONVERSA
+with aba_conversa:
+    st.subheader("💬 Fale com a Lumina")
+    for msg in st.session_state.conversa:
+        with st.chat_message(msg["quem"]):
             st.write(msg["texto"])
     
-    # Entrada
-    fala = st.chat_input("O que você precisa?")
-    if fala:
-        st.session_state.mensagens.append({"funcao": "usuario", "texto": fala})
-        for resposta in processar_comando(fala):
-            st.session_state.mensagens.append({"funcao": "assistente", "texto": resposta})
-        st.rerun()
+    pergunta = st.chat_input("Pergunte algo...")
+    if pergunta:
+        st.session_state.conversa.append({"quem": "você", "texto": pergunta})
+        with st.chat_message("você"):
+            st.write(pergunta)
+        with st.chat_message("Lumina"), st.spinner("Pensando..."):
+            resp = responder(pergunta)
+            st.write(resp)
+        st.session_state.conversa.append({"quem": "Lumina", "texto": resp})
 
-# ABA 2 — FOTO
-with aba2:
-    st.subheader("Envie sua própria imagem")
-    foto = st.file_uploader("Escolha do celular", type=["jpg", "jpeg", "png"])
-    if foto:
-        st.session_state.foto_usuario = foto
-        st.success("✅ Imagem carregada com sucesso!")
-        st.image(foto, width=400, caption="Sua imagem")
-
-# ABA 3 — RESULTADO
-with aba3:
-    c = st.session_state.config
-    st.subheader("Projeto Final")
+# ABA 2 — PROJETO
+with aba_projeto:
+    st.subheader("🎨 Monte seu Projeto")
+    cfg = st.session_state.dados_proj
+    res = resolucao_atual()
     
-    if not c["texto"]:
-        st.info("💬 Vá em 'Comandos' e diga: **texto é Nome da Sua Loja**")
-    else:
-        larg, alt = dimensoes[c["tipo"]]
-        
-        # Escolhe base
-        if st.session_state.imagem_gerada:
-            img = st.session_state.imagem_gerada.resize((larg, alt))
-            st.info("🖼️ Imagem criada pela IA")
-        elif st.session_state.foto_usuario:
-            img = Image.open(st.session_state.foto_usuario).convert("RGB").resize((larg, alt))
-            st.info("📷 Usando sua imagem")
+    col1, col2 = st.columns(2)
+    with col1:
+        cfg["texto"] = st.text_input("✍ Texto", value=cfg["texto"])
+        cfg["tipo"] = st.selectbox("📐 Tipo", list(res.keys()), index=list(res.keys()).index(cfg["tipo"]))
+        cfg["tam_letra"] = st.slider("🔤 Tamanho da Letra", 24, 80, cfg["tam_letra"])
+    with col2:
+        cfg["cor_fundo"] = st.color_picker("🎨 Cor de Fundo", cfg["cor_fundo"])
+        cfg["cor_letra"] = st.color_picker("✏️ Cor da Letra", cfg["cor_letra"])
+        cfg["sombra"] = st.checkbox("💫 Sombra", value=cfg["sombra"])
+    
+    st.divider()
+    cfg["cena"] = st.text_area("🖼️ Descreva a imagem:", 
+        value=cfg["cena"],
+        placeholder="Ex: Barraca de coco na praia, areia branca, mar azul cristalino, sol...",
+        height=100)
+    
+    if st.button("✨ Gerar Imagem", type="primary", use_container_width=True):
+        if cfg["cena"]:
+            with st.spinner("Desenhando..."):
+                try:
+                    larg, alt = res[cfg["tipo"]]
+                    prompt = f"{cfg['cena']}, sinalização comercial, cores vivas, alta definição, sem texto"
+                    url = f"https://image.pollinations.ai/prompt/{prompt.replace(' ', '%20')}?width={larg}&height={alt}&nologo=true&quality=2"
+                    resp_img = requests.get(url, timeout=120)
+                    if resp_img.status_code == 200:
+                        st.session_state.img_criada = Image.open(io.BytesIO(resp_img.content))
+                        if st.session_state.usuario:
+                            st.session_state.usuario["usos"] += 1
+                        st.success(f"✅ Pronto! Resolução: {larg}×{alt}")
+                    else:
+                        st.warning("⚠️ Envie sua foto abaixo")
+                except:
+                    st.error("❌ Sem conexão — envie sua imagem")
         else:
-            img = Image.new("RGB", (larg, alt), c["cor_fundo"])
-            st.info("🎨 Cor de fundo selecionada")
+            st.warning("⚠️ Descreva a imagem primeiro!")
+    
+    st.divider()
+    st.subheader("📷 Ou use sua imagem")
+    st.info("Busque grátis: Pexels · Unsplash · Pixabay")
+    envio = st.file_uploader("Envie a imagem", type=["jpg", "jpeg", "png"])
+    if envio:
+        st.session_state.img_envio = envio
+        st.success("✅ Recebida!")
+    
+    st.divider()
+    
+    # RESULTADO COM ZOOM
+    st.subheader("👁️ Resultado Final (clique para ampliar)")
+    
+    if not cfg["texto"]:
+        st.info("✍️ Digite um texto acima")
+    else:
+        larg, alt = res[cfg["tipo"]]
         
-        # Desenha texto
+        if st.session_state.img_criada:
+            img = st.session_state.img_criada.resize((larg, alt))
+            st.info(f"🖼️ Imagem criada — {larg}×{alt}")
+        elif st.session_state.img_envio:
+            img = Image.open(st.session_state.img_envio).convert("RGB").resize((larg, alt))
+            st.info(f"📷 Sua imagem — {larg}×{alt}")
+        else:
+            img = Image.new("RGB", (larg, alt), cfg["cor_fundo"])
+            st.info(f"🎨 Cor de fundo — {larg}×{alt}")
+        
+        # Escrever texto
         desenho = ImageDraw.Draw(img)
         try:
-            fonte = ImageFont.truetype("arial.ttf", c["tamanho_fonte"])
+            fonte = ImageFont.truetype("arial.ttf", cfg["tam_letra"])
         except:
             fonte = ImageFont.load_default()
         
-        bbox = desenho.textbbox((0, 0), c["texto"], font=fonte)
-        lar_texto = bbox[2] - bbox[0]
-        alt_texto = bbox[3] - bbox[1]
-        x = (larg - lar_texto) // 2
-        y = (alt - alt_texto) // 2
+        bbox = desenho.textbbox((0, 0), cfg["texto"], font=fonte)
+        lar_t = bbox[2] - bbox[0]
+        alt_t = bbox[3] - bbox[1]
+        x = (larg - lar_t) // 2
+        y = (alt - alt_t) // 2
         
-        if c["sombra"]:
-            desenho.text((x+2, y+2), c["texto"], fill="#000000", font=fonte)
-        desenho.text((x, y), c["texto"], fill=c["cor_texto"], font=fonte)
+        if cfg["sombra"]:
+            desenho.text((x+3, y+3), cfg["texto"], fill="#000000", font=fonte)
+        desenho.text((x, y), cfg["texto"], fill=cfg["cor_letra"], font=fonte)
         
-        st.image(img, caption=f"{c['tipo']} — {c['texto']}", use_column_width=True)
+        # ZOOM — exibe em tamanho completo ao clicar
+        st.image(img, caption=f"{cfg['tipo']} — {cfg['texto']}", use_column_width=True, output_format="PNG")
+        
+        with st.expander("🔍 Ampliar imagem"):
+            st.image(img, caption="Visualização ampliada", width=larg)
         
         # Download
         saida = io.BytesIO()
-        img.save(saida, "PNG")
+        img.save(saida, "PNG", quality=98)
         saida.seek(0)
         st.download_button(
-            label="📥 BAIXAR PROJETO FINAL",
-            data=saida,
-            file_name=f"{c['tipo']}_{c['texto'].replace(' ', '_')}.png",
-            mime="image/png",
-            type="primary",
-            use_container_width=True
+            "📥 BAIXAR EM ALTA", saida,
+            f"{cfg['tipo']}_{cfg['texto'].replace(' ', '_')}.png",
+            "image/png", type="primary", use_container_width=True
         )
+
+st.caption("© 2026 — Lumina IA | Propriedade Exclusiva")
