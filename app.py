@@ -39,7 +39,7 @@ with st.expander("🔒 Área do Criador"):
         st.success(f"✅ {DONO_NOME}")
         st.info(f"PIX: {DONO_PIX}")
         st.session_state.chave_gemini = st.text_input("Chave Gemini", type="password", value=st.session_state.chave_gemini)
-        st.caption("Sua chave já está aceita!")
+        st.caption("Aceita qualquer formato de chave")
         if st.button("🚪 Sair"):
             st.session_state.logado_dono = False
             st.rerun()
@@ -67,15 +67,24 @@ def responder_ia(mensagem):
     chave = st.session_state.chave_gemini.strip()
     if not chave:
         return "⚠️ Coloque sua chave na Área do Criador acima."
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={chave}"
-        dados = {"contents": [{"parts": [{"text": f"Responda em português do Brasil de forma simples e amigável. Pergunta: {mensagem}"}]}]}
-        r = requests.post(url, json=dados, timeout=30)
-        if r.status_code == 200:
-            return r.json()["candidates"][0]["content"]["parts"][0]["text"]
-        return f"⚠️ Erro {r.status_code}: chave não funciona ou expirou."
-    except Exception as e:
-        return f"⚠️ Sem conexão: {str(e)}"
+    
+    modelos = [
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-pro"
+    ]
+    
+    for modelo in modelos:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1/models/{modelo}:generateContent?key={chave}"
+            dados = {"contents": [{"parts": [{"text": f"Responda em português do Brasil de forma simples e amigável: {mensagem}"}]}]}
+            r = requests.post(url, json=dados, timeout=30)
+            if r.status_code == 200:
+                return r.json()["candidates"][0]["content"]["parts"][0]["text"]
+        except:
+            continue
+    
+    return "⚠️ Chave não funciona. Tente pegar pelo site: makersuite.google.com → ícone de chave 🔑 → chave que começa com AIzaSy..."
 
 aba1, aba2 = st.tabs(["💬 Conversar", "🎨 Criar Projeto"])
 
