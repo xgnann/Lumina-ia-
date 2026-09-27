@@ -31,18 +31,6 @@ estilo = """
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     margin-bottom: 1rem;
 }
-.destaque {
-    background: linear-gradient(90deg, #10b981, #0ea5e9);
-    color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-weight: bold;
-}
-.botao-principal {
-    background: linear-gradient(90deg, #10b981, #0284c7);
-    border: none;
-    font-weight: bold;
-}
 .nivel-bronze { border-left: 4px solid #cd7f32; padding-left: 1rem; }
 .nivel-prata { border-left: 4px solid #c0c0c0; padding-left: 1rem; }
 .nivel-ouro { border-left: 4px solid #ffd700; padding-left: 1rem; }
@@ -97,31 +85,13 @@ def nivel_usuario():
 def obter_resolucao():
     _, nivel, _ = nivel_usuario()
     if nivel == "ouro":
-        return {
-            "Fachada": (1920, 960),
-            "Placa": (1400, 930),
-            "Banner": (1920, 720),
-            "Cartão de Visita": (720, 432),
-            "Adesivo": (960, 960)
-        }
+        return {"Fachada": (1920, 960), "Placa": (1400, 930), "Banner": (1920, 720), "Cartão de Visita": (720, 432), "Adesivo": (960, 960)}
     elif nivel == "prata":
-        return {
-            "Fachada": (1400, 700),
-            "Placa": (1050, 700),
-            "Banner": (1400, 525),
-            "Cartão de Visita": (525, 315),
-            "Adesivo": (700, 700)
-        }
+        return {"Fachada": (1400, 700), "Placa": (1050, 700), "Banner": (1400, 525), "Cartão de Visita": (525, 315), "Adesivo": (700, 700)}
     elif nivel == "bronze" and st.session_state.usuario:
         return medidas_padrao
     else:
-        return {
-            "Fachada": (800, 400),
-            "Placa": (600, 400),
-            "Banner": (800, 300),
-            "Cartão de Visita": (300, 180),
-            "Adesivo": (400, 400)
-        }
+        return {"Fachada": (800, 400), "Placa": (600, 400), "Banner": (800, 300), "Cartão de Visita": (300, 180), "Adesivo": (400, 400)}
 
 # ====================== ÁREA DO DONO ======================
 with st.expander("🔒 Área do Criador"):
@@ -137,11 +107,7 @@ with st.expander("🔒 Área do Criador"):
         st.success(f"✅ {DONO_NOME}")
         st.info(f"PIX: `{DONO_PIX}`")
         st.divider()
-        st.session_state.chave_gemini = st.text_input(
-            "Chave Gemini",
-            type="password",
-            value=st.session_state.chave_gemini
-        )
+        st.session_state.chave_gemini = st.text_input("Chave Gemini", type="password", value=st.session_state.chave_gemini)
         st.caption("Grátis: makersuite.google.com → Get API key")
         st.divider()
         if st.button("🚪 Sair"):
@@ -166,12 +132,7 @@ if not st.session_state.usuario:
         email = st.text_input("Seu e-mail")
         enviado = st.form_submit_button("✅ Cadastrar Grátis", type="primary")
         if enviado and nome and email:
-            st.session_state.usuario = {
-                "nome": nome,
-                "email": email,
-                "nivel": "bronze",
-                "usos": 0
-            }
+            st.session_state.usuario = {"nome": nome, "email": email, "nivel": "bronze", "usos": 0}
             st.success(f"🎉 Bem-vindo, {nome}! Qualidade melhorada liberada!")
             st.rerun()
 else:
@@ -184,11 +145,10 @@ else:
             st.rerun()
     with col2:
         usos = st.session_state.usuario["usos"]
-        nivel_atual = st.session_state.usuario["nivel"]
-        if usos >= 5 and nivel_atual == "bronze":
+        if usos >= 5 and st.session_state.usuario["nivel"] == "bronze":
             st.session_state.usuario["nivel"] = "prata"
             st.success("🎉 Subiu para ⭐ Prata!")
-        if usos >= 15 and nivel_atual == "prata":
+        if usos >= 15 and st.session_state.usuario["nivel"] == "prata":
             st.session_state.usuario["nivel"] = "ouro"
             st.success("🏆 Subiu para ✨ Ouro!")
 
@@ -198,16 +158,10 @@ st.divider()
 def responder(mensagem):
     if not st.session_state.chave_gemini:
         return "⚠️ Configure a chave do Gemini na Área do Criador."
-    
     hist = ""
     for m in st.session_state.conversa[-5:]:
         hist += f"{m['quem']}: {m['texto']}\n"
-    
-    prompt = f"""Você é Lumina IA, amigável e prática. Responda em português do Brasil.
-{hist}
-Pergunta: {mensagem}
-Resposta:"""
-    
+    prompt = f"Você é Lumina IA, amigável e prática. Responda em português do Brasil.\n{hist}\nPergunta: {mensagem}\nResposta:"
     try:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={st.session_state.chave_gemini}"
         r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
@@ -226,7 +180,6 @@ with aba_conversa:
     for msg in st.session_state.conversa:
         with st.chat_message(msg["quem"]):
             st.write(msg["texto"])
-    
     pergunta = st.chat_input("Pergunte algo...")
     if pergunta:
         st.session_state.conversa.append({"quem": "você", "texto": pergunta})
@@ -254,12 +207,7 @@ with aba_projeto:
         cfg["sombra"] = st.checkbox("💫 Sombra", value=cfg["sombra"])
     
     st.divider()
-    cfg["cena"] = st.text_area(
-        "🖼️ Descreva a imagem:",
-        value=cfg["cena"],
-        placeholder="Ex: Barraca de coco na praia, areia branca, mar azul...",
-        height=100
-    )
+    cfg["cena"] = st.text_area("🖼️ Descreva a imagem:", value=cfg["cena"], placeholder="Ex: Barraca de coco na praia...", height=100)
     
     if st.button("✨ Gerar Imagem", type="primary", use_container_width=True):
         if cfg["cena"]:
@@ -291,31 +239,27 @@ with aba_projeto:
     
     st.divider()
     
-    # RESULTADO — CORRIGIDO ✅
-    st.subheader("👁️ Resultado Final (clique para ampliar)")
+    # RESULTADO — CORRIGIDO DE VEZ ✅
+    st.subheader("👁️ Resultado Final")
     
     if not cfg["texto"]:
         st.info("✍️ Digite um texto acima")
     else:
         larg, alt = res[cfg["tipo"]]
         
-        # Escolher imagem de fundo
-        imagem_final = None
-        fonte_info = ""
+        # Cria imagem base
         if st.session_state.img_criada:
-            imagem_final = st.session_state.img_criada.resize((larg, alt))
-            fonte_info = f"🖼️ Imagem criada — {larg}×{alt}"
+            img = st.session_state.img_criada.resize((larg, alt))
+            st.info(f"🖼️ Imagem criada — {larg}×{alt}")
         elif st.session_state.img_envio:
-            imagem_final = Image.open(st.session_state.img_envio).convert("RGB").resize((larg, alt))
-            fonte_info = f"📷 Sua imagem — {larg}×{alt}"
+            img = Image.open(st.session_state.img_envio).convert("RGB").resize((larg, alt))
+            st.info(f"📷 Sua imagem — {larg}×{alt}")
         else:
-            imagem_final = Image.new("RGB", (larg, alt), cfg["cor_fundo"])
-            fonte_info = f"🎨 Cor de fundo — {larg}×{alt}"
+            img = Image.new("RGB", (larg, alt), cfg["cor_fundo"])
+            st.info(f"🎨 Cor de fundo — {larg}×{alt}")
         
-        st.info(fonte_info)
-        
-        # Desenhar texto
-        desenho = ImageDraw.Draw(imagem_final)
+        # Desenha texto
+        desenho = ImageDraw.Draw(img)
         try:
             fonte = ImageFont.truetype("arial.ttf", cfg["tam_letra"])
         except:
@@ -331,24 +275,22 @@ with aba_projeto:
             desenho.text((x+3, y+3), cfg["texto"], fill="#000000", font=fonte)
         desenho.text((x, y), cfg["texto"], fill=cfg["cor_letra"], font=fonte)
         
-        # Exibir imagem — CORRIGIDO ✅
-        legenda = f"{cfg['tipo']} — {cfg['texto']}"
-        st.image(imagem_final, caption=legenda, use_column_width=True)
+        # Converte para bytes e exibe — GARANTIDO FUNCIONAR ✅
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
         
+        legenda = f"{cfg['tipo']} — {cfg['texto']}"
+        st.image(buffer, caption=legenda, use_column_width=True)
+        
+        # Zoom
         with st.expander("🔍 Ampliar imagem"):
-            st.image(imagem_final, caption="Visualização ampliada", width=larg)
+            buffer.seek(0)
+            st.image(buffer, caption="Visualização ampliada", width=larg)
         
         # Download
-        saida = io.BytesIO()
-        imagem_final.save(saida, "PNG", quality=98)
-        saida.seek(0)
-        st.download_button(
-            "📥 BAIXAR EM ALTA",
-            saida,
-            f"{cfg['tipo']}_{cfg['texto'].replace(' ', '_')}.png",
-            "image/png",
-            type="primary",
-            use_container_width=True
-        )
+        buffer.seek(0)
+        nome_arquivo = f"{cfg['tipo']}_{cfg['texto'].replace(' ', '_')}.png"
+        st.download_button("📥 BAIXAR EM ALTA", buffer, nome_arquivo, "image/png", type="primary", use_container_width=True)
 
 st.caption("© 2026 — Lumina IA | Propriedade Exclusiva")
